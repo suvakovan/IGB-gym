@@ -58,24 +58,42 @@ export default function AIChatbot() {
             timestamp: new Date()
         }
 
-        setMessages(prev => [...prev, userMessage])
+        const newMessages = [...messages, userMessage]
+        setMessages(newMessages)
         setInput('')
         setIsTyping(true)
 
-        // Simulate AI thinking
-        await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700))
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ messages: newMessages }),
+            })
 
-        const response = generateChatResponse(input)
+            const data = await response.json()
 
-        const botMessage: Message = {
-            id: Date.now() + 1,
-            text: response,
-            isBot: true,
-            timestamp: new Date()
+            const botMessage: Message = {
+                id: Date.now() + 1,
+                text: data.reply || "Sorry, I'm having trouble connecting right now.",
+                isBot: true,
+                timestamp: new Date()
+            }
+
+            setMessages(prev => [...prev, botMessage])
+        } catch (error) {
+            console.error('Chat Error:', error)
+            const errorMessage: Message = {
+                id: Date.now() + 1,
+                text: "I'm having trouble connecting to the server. Please try again.",
+                isBot: true,
+                timestamp: new Date()
+            }
+            setMessages(prev => [...prev, errorMessage])
+        } finally {
+            setIsTyping(false)
         }
-
-        setIsTyping(false)
-        setMessages(prev => [...prev, botMessage])
     }
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
