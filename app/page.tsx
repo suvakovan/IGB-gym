@@ -32,6 +32,12 @@ import AIWorkoutGenerator from '@/components/AIWorkoutGenerator'
 import AINutritionAssistant from '@/components/AINutritionAssistant'
 import AIProgramRecommender from '@/components/AIProgramRecommender'
 import { getBMIRecommendations, categorizeInquiry } from '@/lib/aiUtils'
+import {
+  getContentPrograms, addContentProgram, updateContentProgram, deleteContentProgram,
+  getContentTrainers, addContentTrainer, updateContentTrainer, deleteContentTrainer,
+  getContentPlans, addContentPlan, updateContentPlan, deleteContentPlan,
+  getContentTestimonials, addContentTestimonial, updateContentTestimonial, deleteContentTestimonial
+} from '@/lib/data'
 
 export default function AlphaGymPage() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -122,87 +128,29 @@ export default function AlphaGymPage() {
     { label: 'Contact', id: 'contact' },
   ]
 
-  const [programs, setPrograms] = useState([
-    {
-      id: 1,
-      icon: 'Dumbbell',
-      title: 'Muscle Gain',
-      description: 'Build lean muscle mass with our strength training programs designed for maximum hypertrophy.',
-    },
-    {
-      id: 2,
-      icon: 'TrendingUp',
-      title: 'Weight Loss',
-      description: 'Burn fat and transform your body with our high-intensity cardio and metabolic conditioning.',
-    },
-    {
-      id: 3,
-      icon: 'Heart',
-      title: 'Cardio Training',
-      description: 'Improve cardiovascular endurance and stamina through structured aerobic exercise programs.',
-    },
-    {
-      id: 4,
-      icon: 'Target',
-      title: 'Yoga & Flexibility',
-      description: 'Enhance mobility, balance, and mental wellness with our yoga and stretching classes.',
-    },
-  ])
+  // Data States
+  const [programs, setPrograms] = useState<any[]>([])
+  const [trainers, setTrainers] = useState<any[]>([])
+  const [plans, setPlans] = useState<any[]>([])
+  const [testimonials, setTestimonials] = useState<any[]>([])
 
-  const [trainers, setTrainers] = useState([
-    { id: 1, name: 'Marcus Steel', specialization: 'Strength & Conditioning', experience: '10+ Years', rating: 4.9 },
-    { id: 2, name: 'Sarah Phoenix', specialization: 'CrossFit & HIIT', experience: '8+ Years', rating: 4.8 },
-    { id: 3, name: 'David Iron', specialization: 'Bodybuilding Coach', experience: '12+ Years', rating: 5.0 },
-    { id: 4, name: 'Emma Flex', specialization: 'Yoga & Pilates', experience: '7+ Years', rating: 4.9 },
-  ])
+  // Fetch Initial Data
+  useEffect(() => {
+    async function loadData() {
+      const [p, t, pl, tm] = await Promise.all([
+        getContentPrograms(),
+        getContentTrainers(),
+        getContentPlans(),
+        getContentTestimonials()
+      ]);
+      setPrograms(p || []);
+      setTrainers(t || []);
+      setPlans(pl || []);
+      setTestimonials(tm || []);
+    }
+    loadData();
+  }, []);
 
-  const [plans, setPlans] = useState([
-    {
-      id: 1,
-      name: 'Basic',
-      price: '$29',
-      period: '/month',
-      features: ['Gym Access', 'Locker Room', 'Free WiFi', 'Basic Equipment'],
-      popular: false,
-    },
-    {
-      id: 2,
-      name: 'Standard',
-      price: '$59',
-      period: '/month',
-      features: ['All Basic Features', 'Group Classes', 'Nutrition Guide', 'Shower Facilities', 'Free Parking'],
-      popular: true,
-    },
-    {
-      id: 3,
-      name: 'Premium',
-      price: '$99',
-      period: '/month',
-      features: ['All Standard Features', 'Personal Training', 'Meal Planning', 'Sauna & Steam Room', '24/7 Access', 'Guest Passes'],
-      popular: false,
-    },
-  ])
-
-  const [testimonials, setTestimonials] = useState([
-    {
-      id: 1,
-      name: 'John Martinez',
-      text: 'Alpha Gym transformed my life! Lost 30 pounds in 4 months and gained incredible strength.',
-      rating: 5,
-    },
-    {
-      id: 2,
-      name: 'Lisa Chen',
-      text: 'The trainers are phenomenal and the community is so supportive. Best gym experience ever!',
-      rating: 5,
-    },
-    {
-      id: 3,
-      name: 'Mike Anderson',
-      text: 'State-of-the-art equipment and amazing facilities. Worth every penny of the membership.',
-      rating: 5,
-    },
-  ])
 
   const iconMap: any = {
     Dumbbell,
@@ -214,60 +162,73 @@ export default function AlphaGymPage() {
   }
 
   // CRUD Handlers
-  const handleDeleteProgram = (id: number) => {
-    setPrograms(programs.filter(p => p.id !== id))
+  // CRUD Handlers
+  const handleDeleteProgram = async (id: any) => {
+    await deleteContentProgram(id);
+    setPrograms(programs.filter(p => p.id !== id));
   }
 
-  const handleAddProgram = (program: any) => {
-    setPrograms([...programs, { ...program, id: Date.now() }])
-    setDialogOpen(null)
+  const handleAddProgram = async (program: any) => {
+    const newP = await addContentProgram(program);
+    if (newP) setPrograms([...programs, newP]);
+    setDialogOpen(null);
   }
 
-  const handleEditProgram = (program: any) => {
-    setPrograms(programs.map(p => p.id === program.id ? program : p))
-    setDialogOpen(null)
+  const handleEditProgram = async (program: any) => {
+    const updatedP = await updateContentProgram(program);
+    if (updatedP) setPrograms(programs.map(p => p.id === program.id ? updatedP : p));
+    setDialogOpen(null);
   }
 
-  const handleDeleteTrainer = (id: number) => {
-    setTrainers(trainers.filter(t => t.id !== id))
+  const handleDeleteTrainer = async (id: any) => {
+    await deleteContentTrainer(id);
+    setTrainers(trainers.filter(t => t.id !== id));
   }
 
-  const handleAddTrainer = (trainer: any) => {
-    setTrainers([...trainers, { ...trainer, id: Date.now() }])
-    setDialogOpen(null)
+  const handleAddTrainer = async (trainer: any) => {
+    const newT = await addContentTrainer(trainer);
+    if (newT) setTrainers([...trainers, newT]);
+    setDialogOpen(null);
   }
 
-  const handleEditTrainer = (trainer: any) => {
-    setTrainers(trainers.map(t => t.id === trainer.id ? trainer : t))
-    setDialogOpen(null)
+  const handleEditTrainer = async (trainer: any) => {
+    const updatedT = await updateContentTrainer(trainer);
+    if (updatedT) setTrainers(trainers.map(t => t.id === trainer.id ? updatedT : t));
+    setDialogOpen(null);
   }
 
-  const handleDeletePlan = (id: number) => {
-    setPlans(plans.filter(p => p.id !== id))
+  const handleDeletePlan = async (id: any) => {
+    await deleteContentPlan(id);
+    setPlans(plans.filter(p => p.id !== id));
   }
 
-  const handleAddPlan = (plan: any) => {
-    setPlans([...plans, { ...plan, id: Date.now() }])
-    setDialogOpen(null)
+  const handleAddPlan = async (plan: any) => {
+    const newP = await addContentPlan(plan);
+    if (newP) setPlans([...plans, newP]);
+    setDialogOpen(null);
   }
 
-  const handleEditPlan = (plan: any) => {
-    setPlans(plans.map(p => p.id === plan.id ? plan : p))
-    setDialogOpen(null)
+  const handleEditPlan = async (plan: any) => {
+    const updatedP = await updateContentPlan(plan);
+    if (updatedP) setPlans(plans.map(p => p.id === plan.id ? updatedP : p));
+    setDialogOpen(null);
   }
 
-  const handleDeleteTestimonial = (id: number) => {
-    setTestimonials(testimonials.filter(t => t.id !== id))
+  const handleDeleteTestimonial = async (id: any) => {
+    await deleteContentTestimonial(id);
+    setTestimonials(testimonials.filter(t => t.id !== id));
   }
 
-  const handleAddTestimonial = (testimonial: any) => {
-    setTestimonials([...testimonials, { ...testimonial, id: Date.now() }])
-    setDialogOpen(null)
+  const handleAddTestimonial = async (testimonial: any) => {
+    const newT = await addContentTestimonial(testimonial);
+    if (newT) setTestimonials([...testimonials, newT]);
+    setDialogOpen(null);
   }
 
-  const handleEditTestimonial = (testimonial: any) => {
-    setTestimonials(testimonials.map(t => t.id === testimonial.id ? testimonial : t))
-    setDialogOpen(null)
+  const handleEditTestimonial = async (testimonial: any) => {
+    const updatedT = await updateContentTestimonial(testimonial);
+    if (updatedT) setTestimonials(testimonials.map(t => t.id === testimonial.id ? updatedT : t));
+    setDialogOpen(null);
   }
 
   // Timer Functions
