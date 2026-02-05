@@ -106,3 +106,114 @@ export async function fetchFullMealDatabase() {
     });
     return db;
 }
+
+// ------------------------------------------------------------------
+// CONTENT MANAGEMENT (CRUD)
+// ------------------------------------------------------------------
+
+// --- Programs ---
+export async function getContentPrograms() {
+    const { data, error } = await supabase.from('content_programs').select('*').order('created_at', { ascending: true });
+    if (error) {
+        console.error('Error fetching programs:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function addContentProgram(program: any) {
+    const { id, ...p } = program;
+    const { data, error } = await supabase.from('content_programs').insert([p]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function updateContentProgram(program: any) {
+    const { id, ...updates } = program;
+    const { data, error } = await supabase.from('content_programs').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteContentProgram(id: string) {
+    const { error } = await supabase.from('content_programs').delete().eq('id', id);
+    if (error) throw error;
+}
+
+// --- Trainers ---
+export async function getContentTrainers() {
+    const { data, error } = await supabase.from('content_trainers').select('*').order('created_at', { ascending: true });
+    if (error) return [];
+    return data;
+}
+
+export async function addContentTrainer(trainer: any) {
+    const { id, ...t } = trainer;
+    const { data, error } = await supabase.from('content_trainers').insert([t]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function updateContentTrainer(trainer: any) {
+    const { id, ...updates } = trainer;
+    const { data, error } = await supabase.from('content_trainers').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteContentTrainer(id: string) {
+    const { error } = await supabase.from('content_trainers').delete().eq('id', id);
+    if (error) throw error;
+}
+
+// --- Plans ---
+export async function getContentPlans() {
+    const { data, error } = await supabase.from('content_plans').select('*').order('created_at', { ascending: true });
+    if (error) return [];
+    return data;
+}
+
+export async function addContentPlan(plan: any) {
+    const { id, ...p } = plan;
+    const { data, error } = await supabase.from('content_plans').insert([p]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function updateContentPlan(plan: any) {
+    const { id, ...updates } = plan;
+    const { data, error } = await supabase.from('content_plans').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteContentPlan(id: string) {
+    const { error } = await supabase.from('content_plans').delete().eq('id', id);
+    if (error) throw error;
+}
+
+// --- Testimonials ---
+export async function getContentTestimonials() {
+    const { data, error } = await supabase.from('content_testimonials').select('*').order('created_at', { ascending: true });
+    if (error) return [];
+    return data;
+}
+
+export async function addContentTestimonial(testimonial: any) {
+    const { id, ...t } = testimonial;
+    const { data, error } = await supabase.from('content_testimonials').insert([t]).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function updateContentTestimonial(testimonial: any) {
+    const { id, ...updates } = testimonial;
+    const { data, error } = await supabase.from('content_testimonials').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteContentTestimonial(id: string) {
+    const { error } = await supabase.from('content_testimonials').delete().eq('id', id);
+    if (error) throw error;
+}
