@@ -44,7 +44,7 @@ export default function AINutritionAssistant() {
         // Simulate AI processing
         await new Promise(resolve => setTimeout(resolve, 1200))
 
-        const plan = generateMealPlan(goal, dietType, parseInt(targetCalories))
+        const plan = await generateMealPlan(goal, dietType, parseInt(targetCalories))
         setMealPlan(plan)
         setIsGenerating(false)
     }

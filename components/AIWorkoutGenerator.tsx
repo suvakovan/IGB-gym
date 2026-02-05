@@ -47,7 +47,7 @@ export default function AIWorkoutGenerator() {
         // Simulate AI processing
         await new Promise(resolve => setTimeout(resolve, 1500))
 
-        const plan = generateWorkoutPlan(goal, level, parseInt(daysPerWeek), equipment)
+        const plan = await generateWorkoutPlan(goal, level, parseInt(daysPerWeek), equipment)
         setWorkoutPlan(plan)
         setSelectedDay(0)
         setIsGenerating(false)
@@ -216,8 +216,8 @@ export default function AIWorkoutGenerator() {
                                                     key={index}
                                                     onClick={() => setSelectedDay(index)}
                                                     className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedDay === index
-                                                            ? 'bg-primary text-primary-foreground'
-                                                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'bg-muted hover:bg-muted/80 text-muted-foreground'
                                                         }`}
                                                 >
                                                     {day.day}
