@@ -1,5 +1,4 @@
 -- Seed Data for Alpha Gym
--- Generated from scripts/generate-seed-standalone.js
 
 -- GYM INFO
 INSERT INTO gym_info (category, key, value) VALUES ('hours', 'weekday', '"Monday - Friday: 5am - 11pm"'::jsonb);
@@ -45,11 +44,11 @@ INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Hangi
 INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Cable Crunches', 'core', 3, '15-20', 'Cable Machine');
 INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Russian Twists', 'core', 3, '20 each side', 'Medicine Ball');
 INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Ab Wheel Rollouts', 'core', 3, '10-12', 'Ab Wheel');
-INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Treadmill Running', 'cardio', undefined, '10-12', '');
-INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Cycling', 'cardio', undefined, '10-12', '');
-INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Rowing', 'cardio', undefined, '10-12', '');
-INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Jump Rope', 'cardio', undefined, '10-12', '');
-INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Stair Climber', 'cardio', undefined, '10-12', '');
+INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Treadmill Running', 'cardio', 3, '20-30 min', 'Moderate');
+INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Cycling', 'cardio', 3, '25-35 min', 'Moderate-High');
+INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Rowing', 'cardio', 3, '15-20 min', 'High');
+INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Jump Rope', 'cardio', 3, '10-15 min', 'High');
+INSERT INTO exercises (name, muscle_group, sets, reps, equipment) VALUES ('Stair Climber', 'cardio', 3, '15-20 min', 'Moderate-High');
 
 -- MEALS
 INSERT INTO meals (name, type, calories, protein, carbs, fat, ingredients) VALUES ('Protein Oatmeal', 'breakfast', 450, 30, 55, 12, '["Oats","Whey protein","Banana","Almond butter"]'::jsonb);

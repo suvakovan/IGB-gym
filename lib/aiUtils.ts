@@ -210,6 +210,176 @@ export async function generateMealPlan(
     return meals;
 }
 
+// AI BMI Recommendations
+export function getBMIRecommendations(bmi: number, category: string): {
+    summary: string;
+    tips: string[];
+    recommendedProgram: string;
+    calorieAdvice: string;
+} {
+    if (category === "Underweight") {
+        return {
+            summary: "Your BMI indicates you're underweight. Focus on healthy weight gain through proper nutrition and strength training.",
+            tips: [
+                "Increase calorie intake by 300-500 calories daily",
+                "Focus on protein-rich foods (1.6-2g per kg bodyweight)",
+                "Incorporate strength training 3-4 times per week",
+                "Eat more frequent, nutrient-dense meals",
+                "Consider healthy weight gain shakes"
+            ],
+            recommendedProgram: "Muscle Gain",
+            calorieAdvice: "Aim for a caloric surplus of 300-500 calories above your maintenance level"
+        };
+    } else if (category === "Normal weight") {
+        return {
+            summary: "Great job! Your BMI is in the healthy range. Focus on maintaining this through balanced nutrition and regular exercise.",
+            tips: [
+                "Maintain a balanced diet with all macronutrients",
+                "Exercise 3-5 times per week for overall fitness",
+                "Mix cardio and strength training",
+                "Stay hydrated (2-3 liters daily)",
+                "Get 7-9 hours of quality sleep"
+            ],
+            recommendedProgram: "Your choice based on fitness goals",
+            calorieAdvice: "Maintain your current calorie intake for weight maintenance"
+        };
+    } else if (category === "Overweight") {
+        return {
+            summary: "Your BMI indicates you're slightly overweight. A combination of cardio and strength training with a moderate calorie deficit can help.",
+            tips: [
+                "Create a mild calorie deficit (300-500 below maintenance)",
+                "Increase protein intake to preserve muscle",
+                "Aim for 150+ minutes of cardio per week",
+                "Add strength training 2-3 times per week",
+                "Reduce processed foods and sugary drinks"
+            ],
+            recommendedProgram: "Weight Loss",
+            calorieAdvice: "Reduce daily calories by 300-500 from your maintenance level"
+        };
+    } else {
+        return {
+            summary: "Your BMI indicates obesity. We recommend consulting with a healthcare provider and starting with low-impact exercises.",
+            tips: [
+                "Start with low-impact activities (walking, swimming)",
+                "Gradually increase activity duration and intensity",
+                "Focus on whole foods and portion control",
+                "Consider working with a personal trainer",
+                "Track your food intake for awareness"
+            ],
+            recommendedProgram: "Weight Loss (start with Cardio Training)",
+            calorieAdvice: "Create a sustainable calorie deficit of 500-750 calories daily"
+        };
+    }
+}
+
+// AI Program Recommender
+export function recommendProgram(answers: {
+    goal: string;
+    experience: string;
+    timeCommitment: string;
+    preference: string;
+    injuries: string;
+}): {
+    program: string;
+    matchPercentage: number;
+    reasons: string[];
+    alternates: string[];
+} {
+    let scores: { [key: string]: number } = {
+        "Muscle Gain": 0,
+        "Weight Loss": 0,
+        "Cardio Training": 0,
+        "Yoga & Flexibility": 0
+    };
+
+    // Goal scoring
+    if (answers.goal === "build-muscle") {
+        scores["Muscle Gain"] += 40;
+        scores["Weight Loss"] += 10;
+    } else if (answers.goal === "lose-weight") {
+        scores["Weight Loss"] += 40;
+        scores["Cardio Training"] += 25;
+    } else if (answers.goal === "improve-endurance") {
+        scores["Cardio Training"] += 40;
+        scores["Weight Loss"] += 15;
+    } else if (answers.goal === "flexibility") {
+        scores["Yoga & Flexibility"] += 40;
+    } else if (answers.goal === "general-fitness") {
+        scores["Muscle Gain"] += 20;
+        scores["Cardio Training"] += 20;
+        scores["Yoga & Flexibility"] += 15;
+    }
+
+    // Experience scoring
+    if (answers.experience === "beginner") {
+        scores["Yoga & Flexibility"] += 15;
+        scores["Cardio Training"] += 10;
+    } else if (answers.experience === "intermediate") {
+        scores["Muscle Gain"] += 15;
+        scores["Weight Loss"] += 15;
+    } else {
+        scores["Muscle Gain"] += 20;
+        scores["Weight Loss"] += 10;
+    }
+
+    // Time commitment
+    if (answers.timeCommitment === "short") {
+        scores["Cardio Training"] += 15;
+    } else if (answers.timeCommitment === "long") {
+        scores["Muscle Gain"] += 15;
+    }
+
+    // Preference
+    if (answers.preference === "strength") {
+        scores["Muscle Gain"] += 20;
+    } else if (answers.preference === "cardio") {
+        scores["Cardio Training"] += 20;
+        scores["Weight Loss"] += 10;
+    } else if (answers.preference === "mind-body") {
+        scores["Yoga & Flexibility"] += 25;
+    }
+
+    // Injuries consideration
+    if (answers.injuries === "yes") {
+        scores["Yoga & Flexibility"] += 20;
+        scores["Muscle Gain"] -= 10;
+    }
+
+    // Find top program
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    const topProgram = sorted[0][0];
+    const topScore = sorted[0][1];
+
+    // Calculate match percentage (max possible ~80)
+    const matchPercentage = Math.min(98, Math.round((topScore / 80) * 100));
+
+    // Generate reasons
+    const reasons: string[] = [];
+    if (answers.goal === "build-muscle" && topProgram === "Muscle Gain") {
+        reasons.push("Aligns perfectly with your muscle-building goal");
+    }
+    if (answers.goal === "lose-weight" && (topProgram === "Weight Loss" || topProgram === "Cardio Training")) {
+        reasons.push("Optimized for fat burning and calorie expenditure");
+    }
+    if (answers.experience === "beginner") {
+        reasons.push("Includes beginner-friendly progressions");
+    }
+    if (answers.preference === "strength" && topProgram === "Muscle Gain") {
+        reasons.push("Matches your strength training preference");
+    }
+    if (answers.injuries === "yes" && topProgram === "Yoga & Flexibility") {
+        reasons.push("Low-impact and safe for recovery");
+    }
+    reasons.push("Suited to your available time commitment");
+
+    return {
+        program: topProgram,
+        matchPercentage,
+        reasons: reasons.slice(0, 3),
+        alternates: sorted.slice(1, 3).map(s => s[0])
+    };
+}
+
 // Smart Contact Form Categorization
 export function categorizeInquiry(message: string): {
     category: string;
