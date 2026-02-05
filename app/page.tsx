@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Dumbbell, Target, Heart, Zap, Users, TrendingUp, Calculator, Mail, Phone, MapPin, Menu, X, ChevronRight, Star, Plus, Edit2, Trash2, Timer, Play, Pause, RotateCcw } from 'lucide-react'
+import { Dumbbell, Target, Heart, Zap, Users, TrendingUp, Calculator, Mail, Phone, MapPin, Menu, X, ChevronRight, Star, Plus, Edit2, Trash2, Timer, Play, Pause, RotateCcw, Sparkles, Bot, CheckCircle2, Clock } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import AIChatbot from '@/components/AIChatbot'
+import AIWorkoutGenerator from '@/components/AIWorkoutGenerator'
+import AINutritionAssistant from '@/components/AINutritionAssistant'
+import AIProgramRecommender from '@/components/AIProgramRecommender'
+import { getBMIRecommendations, categorizeInquiry } from '@/lib/aiUtils'
 
 export default function AlphaGymPage() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -35,6 +40,14 @@ export default function AlphaGymPage() {
   const [weight, setWeight] = useState('')
   const [bmi, setBmi] = useState<number | null>(null)
   const [bmiCategory, setBmiCategory] = useState('')
+  const [bmiRecommendations, setBmiRecommendations] = useState<any>(null)
+
+  // Contact Form AI States
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactResponse, setContactResponse] = useState<any>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // CRUD States
   const [editingProgram, setEditingProgram] = useState<any>(null)
@@ -63,13 +76,32 @@ export default function AlphaGymPage() {
     const w = parseFloat(weight)
     if (h > 0 && w > 0) {
       const bmiValue = w / (h * h)
-      setBmi(parseFloat(bmiValue.toFixed(1)))
+      const roundedBmi = parseFloat(bmiValue.toFixed(1))
+      setBmi(roundedBmi)
 
-      if (bmiValue < 18.5) setBmiCategory('Underweight')
-      else if (bmiValue < 25) setBmiCategory('Normal weight')
-      else if (bmiValue < 30) setBmiCategory('Overweight')
-      else setBmiCategory('Obese')
+      let category = ''
+      if (bmiValue < 18.5) category = 'Underweight'
+      else if (bmiValue < 25) category = 'Normal weight'
+      else if (bmiValue < 30) category = 'Overweight'
+      else category = 'Obese'
+
+      setBmiCategory(category)
+      // Generate AI recommendations
+      const recommendations = getBMIRecommendations(roundedBmi, category)
+      setBmiRecommendations(recommendations)
     }
+  }
+
+  const handleContactSubmit = async () => {
+    if (!contactName || !contactEmail || !contactMessage) return
+
+    setIsSubmitting(true)
+    // Simulate processing
+    await new Promise(resolve => setTimeout(resolve, 800))
+
+    const response = categorizeInquiry(contactMessage)
+    setContactResponse(response)
+    setIsSubmitting(false)
   }
 
   const scrollToSection = (id: string) => {
@@ -84,9 +116,9 @@ export default function AlphaGymPage() {
     { label: 'Home', id: 'home' },
     { label: 'About', id: 'about' },
     { label: 'Programs', id: 'programs' },
+    { label: 'AI Tools', id: 'ai-workout' },
     { label: 'Trainers', id: 'trainers' },
     { label: 'Pricing', id: 'pricing' },
-    { label: 'Timer', id: 'timer' },
     { label: 'Contact', id: 'contact' },
   ]
 
@@ -508,6 +540,15 @@ export default function AlphaGymPage() {
           </div>
         </div>
       </section>
+
+      {/* AI Workout Generator */}
+      <AIWorkoutGenerator />
+
+      {/* AI Nutrition Assistant */}
+      <AINutritionAssistant />
+
+      {/* AI Program Recommender */}
+      <AIProgramRecommender />
 
       {/* Trainers Section */}
       <section id="trainers" className="py-20 bg-card">
@@ -939,12 +980,42 @@ export default function AlphaGymPage() {
                 </Button>
 
                 {bmi !== null && (
-                  <div className="mt-6 p-6 bg-primary/10 rounded-lg border border-primary/30 animate-in fade-in slide-in-from-bottom">
-                    <div className="text-center">
-                      <div className="text-sm text-muted-foreground mb-2">Your BMI</div>
-                      <div className="text-5xl font-bold text-primary mb-2">{bmi}</div>
-                      <Badge className="bg-primary text-primary-foreground">{bmiCategory}</Badge>
+                  <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-bottom">
+                    <div className="p-6 bg-primary/10 rounded-lg border border-primary/30">
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground mb-2">Your BMI</div>
+                        <div className="text-5xl font-bold text-primary mb-2">{bmi}</div>
+                        <Badge className="bg-primary text-primary-foreground">{bmiCategory}</Badge>
+                      </div>
                     </div>
+
+                    {/* AI Recommendations */}
+                    {bmiRecommendations && (
+                      <div className="p-6 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg border border-primary/20">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Sparkles className="w-5 h-5 text-primary" />
+                          <h4 className="font-bold text-foreground">AI Recommendations</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">{bmiRecommendations.summary}</p>
+                        <ul className="space-y-2 mb-4">
+                          {bmiRecommendations.tips.slice(0, 4).map((tip: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-muted-foreground">{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className="border-primary/30">
+                            <Target className="w-3 h-3 mr-1" />
+                            {bmiRecommendations.recommendedProgram}
+                          </Badge>
+                          <Badge variant="outline" className="border-orange-500/30 text-orange-500">
+                            {bmiRecommendations.calorieAdvice.split(' ').slice(0, 6).join(' ')}...
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -1044,25 +1115,84 @@ export default function AlphaGymPage() {
             <div className="grid md:grid-cols-2 gap-8">
               <Card className="border-border/50 bg-card">
                 <CardHeader>
-                  <CardTitle>Send us a message</CardTitle>
-                  <CardDescription>{"We'll get back to you within 24 hours"}</CardDescription>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="w-5 h-5 text-primary" />
+                    Send us a message
+                  </CardTitle>
+                  <CardDescription>{"AI-powered instant response • We'll follow up within 24 hours"}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" className="border-border/50 focus:border-primary" />
+                    <Label htmlFor="contact-name">Full Name</Label>
+                    <Input
+                      id="contact-name"
+                      placeholder="John Doe"
+                      className="border-border/50 focus:border-primary"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" className="border-border/50 focus:border-primary" />
+                    <Label htmlFor="contact-email">Email</Label>
+                    <Input
+                      id="contact-email"
+                      type="email"
+                      placeholder="john@example.com"
+                      className="border-border/50 focus:border-primary"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea id="message" placeholder="Tell us about your fitness goals..." className="border-border/50 focus:border-primary min-h-[120px]" />
+                    <Label htmlFor="contact-message">Message</Label>
+                    <Textarea
+                      id="contact-message"
+                      placeholder="Tell us about your fitness goals..."
+                      className="border-border/50 focus:border-primary min-h-[120px]"
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                    />
                   </div>
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    Send Message
+                  <Button
+                    onClick={handleContactSubmit}
+                    disabled={!contactName || !contactEmail || !contactMessage || isSubmitting}
+                    className="w-full bg-primary hover:bg-primary/90"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="animate-spin mr-2">⚡</span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
+
+                  {/* AI Response */}
+                  {contactResponse && (
+                    <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-primary/10 rounded-lg border border-green-500/30 animate-in fade-in slide-in-from-bottom">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        <span className="font-semibold text-foreground">Message Received!</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge className="bg-primary/20 text-primary border-primary/30">
+                          {contactResponse.category}
+                        </Badge>
+                        <Badge variant="outline" className={contactResponse.priority === 'Urgent' ? 'border-red-500/50 text-red-500' : contactResponse.priority === 'High' ? 'border-orange-500/50 text-orange-500' : ''}>
+                          {contactResponse.priority} Priority
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{contactResponse.autoResponse}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        <span>Estimated response: {contactResponse.estimatedResponseTime}</span>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -1168,6 +1298,9 @@ export default function AlphaGymPage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating AI Chatbot */}
+      <AIChatbot />
     </div>
   )
 }
