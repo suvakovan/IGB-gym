@@ -14,19 +14,31 @@ interface Message {
     timestamp: Date
 }
 
+// Helper function to format time consistently
+const formatTime = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+}
+
 export default function AIChatbot() {
     const [isOpen, setIsOpen] = useState(false)
-    const [messages, setMessages] = useState<Message[]>([
-        {
+    const [messages, setMessages] = useState<Message[]>([])
+    const [input, setInput] = useState('')
+    const [isTyping, setIsTyping] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    // Initialize messages on client only to avoid hydration mismatch
+    useEffect(() => {
+        setMounted(true)
+        setMessages([{
             id: 1,
             text: "Hello! 💪 I'm Alpha Gym's AI assistant. How can I help you today? Ask me about our programs, pricing, trainers, or fitness tips!",
             isBot: true,
             timestamp: new Date()
-        }
-    ])
-    const [input, setInput] = useState('')
-    const [isTyping, setIsTyping] = useState(false)
-    const messagesEndRef = useRef<HTMLDivElement>(null)
+        }])
+    }, [])
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -147,13 +159,13 @@ export default function AIChatbot() {
                                         </div>
                                         <div
                                             className={`px-4 py-3 rounded-2xl text-sm ${message.isBot
-                                                    ? 'bg-muted text-foreground rounded-tl-none'
-                                                    : 'bg-primary text-primary-foreground rounded-tr-none'
+                                                ? 'bg-muted text-foreground rounded-tl-none'
+                                                : 'bg-primary text-primary-foreground rounded-tr-none'
                                                 }`}
                                         >
                                             <p className="whitespace-pre-line leading-relaxed">{message.text}</p>
                                             <p className={`text-xs mt-1 ${message.isBot ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
-                                                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {formatTime(message.timestamp)}
                                             </p>
                                         </div>
                                     </div>
