@@ -115,7 +115,13 @@ export async function fetchFullMealDatabase() {
 export async function getContentPrograms() {
     const { data, error } = await supabase.from('content_programs').select('*').order('created_at', { ascending: true });
     if (error) {
-        console.error('Error fetching programs:', error);
+        console.error('Error fetching programs:', JSON.stringify(error, null, 2));
+        if (error instanceof Error) {
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+        } else {
+            console.error('Full error object:', error);
+        }
         return [];
     }
     return data;
